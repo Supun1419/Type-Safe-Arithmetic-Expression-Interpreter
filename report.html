@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EC8206 Project Report</title>
+<style>
+  @page { size: A4; margin: 1.65cm 1.8cm 1.55cm 1.8cm; }
+  body { font-family: Aptos, Arial, sans-serif; font-size: 10.5pt; line-height: 1.22; color: #17202a; margin: 0; }
+  h1 { color: #17365d; font-size: 22pt; margin: 0 0 6pt 0; }
+  h2 { color: #1f4e79; font-size: 15pt; margin: 0 0 7pt 0; border-bottom: 1.5pt solid #5b9bd5; padding-bottom: 3pt; }
+  h3 { color: #2f5597; font-size: 11pt; margin: 8pt 0 3pt 0; }
+  p { margin: 3pt 0 6pt 0; }
+  ul { margin: 3pt 0 6pt 18pt; padding: 0; }
+  li { margin: 1pt 0; }
+  table { width: 100%; border-collapse: collapse; margin: 5pt 0 8pt 0; font-size: 9.3pt; }
+  th { background: #1f4e79; color: white; padding: 4pt; border: 1px solid #b4c6e7; text-align: left; }
+  td { padding: 3.5pt 4pt; border: 1px solid #b4c6e7; vertical-align: top; }
+  tr:nth-child(even) td { background: #eef3f8; }
+  code, pre { font-family: Consolas, "Courier New", monospace; font-size: 8.7pt; }
+  pre { background: #f3f6f9; border-left: 3pt solid #5b9bd5; padding: 6pt; margin: 5pt 0 7pt 0; white-space: pre-wrap; }
+  .meta { width: 72%; margin-top: 10pt; }
+  .meta td { border: none; border-bottom: 1px solid #b4c6e7; background: white !important; }
+  .tag { color: #666; width: 35%; font-weight: bold; }
+  .callout { background: #eaf2f8; border: 1px solid #9dc3e6; padding: 6pt 8pt; margin: 7pt 0; }
+  .small { font-size: 8.8pt; color: #4d4d4d; }
+  .page-break { page-break-before: always; }
+  .footer-note { margin-top: 12pt; border-top: 1px solid #b4c6e7; padding-top: 5pt; }
+</style>
+</head>
+<body>
+
+<h1>Type-Safe Arithmetic Expression Interpreter</h1>
+<p><strong>EC 8206 — Functional Programming</strong><br>Project Assignment (20%)</p>
+
+<table class="meta">
+  <tr><td class="tag">Student name</td><td>[Your Name]</td></tr>
+  <tr><td class="tag">Registration number</td><td>[Your Registration Number]</td></tr>
+  <tr><td class="tag">Language</td><td>Haskell (GHC)</td></tr>
+</table>
+
+<h3>Design summary</h3>
+<p>The project models expressions with the algebraic data type <code>Expr</code>. Its alternatives are numeric literals, variables, the four arithmetic operators, and a local <code>Let</code> binding. An environment is a list of name/value pairs. Placing a new pair at the front implements lexical shadowing without changing an existing environment.</p>
+
+<div class="callout"><strong>Safety:</strong> <code>eval :: Env -&gt; Expr -&gt; Either String Double</code> returns either a useful error message or a number. Division by zero and undefined variables therefore remain ordinary, typed results instead of terminating the program.</div>
+
+<h3>How to run</h3>
+<p>Put <code>Expr.hs</code> and <code>Main.hs</code> in the same directory. With GHC installed, execute:</p>
+<pre>runghc Main.hs
+
+# or compile with warnings enabled
+ghc -Wall Main.hs -o expression-interpreter
+./expression-interpreter</pre>
+
+<br clear="all" style="mso-special-character:line-break;page-break-before:always">
+<h2>Implementation Evidence</h2>
+<h3>Sample evaluations: expected versus actual</h3>
+<p>Environment for these cases: <code>[("x",10),("y",4)]</code>.</p>
+<table>
+  <tr><th>#</th><th>Expression</th><th>Expected</th><th>Actual</th></tr>
+  <tr><td>1</td><td><code>Add (Lit 2) (Lit 3)</code></td><td><code>Right 5.0</code></td><td><code>Right 5.0</code></td></tr>
+  <tr><td>2</td><td><code>Mul (Var "x") (Var "y")</code></td><td><code>Right 40.0</code></td><td><code>Right 40.0</code></td></tr>
+  <tr><td>3</td><td><code>Sub (Mul (Var "x") (Lit 3)) (Var "y")</code></td><td><code>Right 26.0</code></td><td><code>Right 26.0</code></td></tr>
+  <tr><td>4</td><td><code>Div (Lit 20) (Var "y")</code></td><td><code>Right 5.0</code></td><td><code>Right 5.0</code></td></tr>
+  <tr><td>5</td><td><code>Let "x" (Lit 7) (Add (Var "x") (Lit 1))</code></td><td><code>Right 8.0</code></td><td><code>Right 8.0</code></td></tr>
+  <tr><td>6</td><td><code>Div (Lit 8) (Sub (Var "y") (Lit 4))</code></td><td><code>Left "division by zero"</code></td><td><code>Left "division by zero"</code></td></tr>
+  <tr><td>7</td><td><code>Add (Var "missing") (Lit 1)</code></td><td><code>Left "undefined variable: missing"</code></td><td><code>Left "undefined variable: missing"</code></td></tr>
+</table>
+
+<p>The simplifier changes <code>Mul (Add (Var "x") (Lit 0)) (Lit 1)</code> to <code>Var "x"</code>. Across the seven expressions above, <code>evalBatch</code> returns <code>[5.0,40.0,26.0,5.0,8.0]</code> and <code>batchSummary</code> returns <code>BatchSummary {succeeded = 5, failed = 2}</code>.</p>
+
+<br clear="all" style="mso-special-character:line-break;page-break-before:always">
+<h2>Part D — Comparative Analysis</h2>
+
+<h3>Equivalent imperative evaluator (Java-like pseudocode)</h3>
+<pre>double eval(Map&lt;String, Double&gt; env, Node expr) {
+    switch (expr.kind) {
+        case LIT: return expr.value;
+        case VAR:
+            if (!env.containsKey(expr.name))
+                throw new Error("undefined variable: " + expr.name);
+            return env.get(expr.name);
+        case ADD: return eval(env, expr.left) + eval(env, expr.right);
+        case SUB: return eval(env, expr.left) - eval(env, expr.right);
+        case MUL: return eval(env, expr.left) * eval(env, expr.right);
+        case DIV:
+            double denominator = eval(env, expr.right);
+            if (denominator == 0) throw new Error("division by zero");
+            return eval(env, expr.left) / denominator;
+        default: throw new Error("unknown expression tag");
+    }
+}</pre>
+
+<h3>Comparison</h3>
+<p><strong>Error representation and propagation.</strong> The Haskell signature announces that evaluation can fail: callers must handle both <code>Left String</code> and <code>Right Double</code>. The <code>do</code> expressions automatically stop at the first <code>Left</code> and pass that error outward. The Python version throws exceptions, which are invisible in its function signature; a caller can forget to catch them. It must also reject unknown tags at runtime.</p>
+
+<p><strong>State and control flow.</strong> Haskell follows the tree through recursive pattern matching. Each call returns a new value, and extending an environment creates a new list whose tail is the previous environment. The imperative version uses a switch and a mutable local variable for the denominator. Its control flow and manually tagged <code>Node</code> representation require runtime checks.</p>
+
+<p><strong>Compile-time guarantees.</strong> Haskell checks that every successful branch returns a <code>Double</code>, every failure is a <code>String</code>, and the caller cannot accidentally use an <code>Either String Double</code> as a number. With warnings enabled, GHC also reports incomplete pattern matches when a new <code>Expr</code> constructor is not handled. The Python encoding permits malformed tuples, misspelled tags, missing fields, and nonnumeric payloads until the affected line executes.</p>
+
+<p><strong>Trade-off.</strong> The imperative representation may look familiar and makes control flow explicit. Haskell more closely matches the expression grammar, while its types move several defect categories from runtime to compile time.</p>
+
+<br clear="all" style="mso-special-character:line-break;page-break-before:always">
+<h2>Part E — Reflection</h2>
+
+<h3>Pure functions</h3>
+<p>A pure function produces the same result whenever it receives the same inputs and has no observable side effects. Both <code>eval</code> and <code>simplify</code> are pure. For example, evaluating <code>Div (Lit 8) (Lit 0)</code> in the same environment always returns <code>Left "division by zero"</code>; it does not print, throw an exception, read a global variable, or modify the environment. This makes individual cases easy to reason about and test as input/output equations.</p>
+
+<p><code>simplify</code> is also pure even though it transforms a tree. It recursively constructs a new expression. Rules such as <code>x + 0 -&gt; x</code>, <code>x * 1 -&gt; x</code>, <code>x * 0 -&gt; 0</code>, <code>x - 0 -&gt; x</code>, and <code>x / 1 -&gt; x</code> do not alter the original value. Constant subexpressions are folded, except division by zero, which is preserved so that <code>eval</code> can still report the error.</p>
+
+<h3>Immutability and scope</h3>
+<p>Values are immutable: once an <code>Expr</code> or environment list has been created, evaluation cannot update it in place. For <code>Let "x" bound body</code>, the bound expression is evaluated first and the body receives <code>("x", value) : env</code>. The old environment remains available unchanged, while lookup selects the first matching pair. This gives predictable local shadowing without mutable variables.</p>
+
+<h3>Why the shape of <code>Expr</code> matters</h3>
+<p><code>Expr</code> is a sum type: a value is exactly one constructor at a time. Each constructor carries only the data it requires. <code>Lit</code> always contains a <code>Double</code>; <code>Var</code> always contains a name; binary operators always contain two complete expressions; and <code>Let</code> always contains a name, a bound expression, and a body. Consequently, states such as an addition with one missing operand or a literal containing text cannot be constructed through the type.</p>
+
+<p>Pattern matching then exposes those shapes safely. The evaluator handles all seven constructors, and a compiler warning highlights omissions after the type is extended. Not every semantic error can be removed by the data type: whether a variable exists depends on the supplied environment, and a denominator can evaluate to zero. Those cases are represented explicitly by <code>Either</code>, keeping failure inside the function's type.</p>
+
+<h3>Higher-order functions and currying</h3>
+<p><code>evalBatch</code> uses <code>map (eval env)</code>. Currying fixes the shared environment first, producing a function <code>Expr -&gt; Either String Double</code> that <code>map</code> applies to each item. A <code>foldr</code> retains successful values, while <code>batchSummary</code> folds the same outcomes into success and failure counts. These functions separate traversal from the operation applied to each element.</p>
+
+<p class="small footer-note"><strong>Assistance disclosure:</strong> OpenAI Codex was used on 25 September 2026 to help draft and review the code and report. The student should verify this disclosure against the University's academic-integrity rules and must be able to explain the submitted work. Recommended background text: Graham Hutton, <em>Programming in Haskell</em>, 2nd ed., Cambridge University Press, 2016.</p>
+
+</body>
+</html>

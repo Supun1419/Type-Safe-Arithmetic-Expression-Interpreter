@@ -1,0 +1,38 @@
+# Haskell compiler output
+*.hi
+*.o
+*.dyn_hi
+*.dyn_o
+*.prof
+*.aux
+*.hp
+*.eventlog
+*.exe
+
+# Cabal and Stack build directories
+dist/
+dist-newstyle/
+.stack-work/
+cabal.project.local
+cabal.project.local~
+
+# Java compiler output
+*.class
+
+# Optional benchmark build output
+performance/build/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary and log files
+*.tmp
+*.temp
+*.log
