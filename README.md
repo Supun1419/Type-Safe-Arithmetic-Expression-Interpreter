@@ -7,12 +7,11 @@ written report.
 
 - `Expr.hs` — expression data type, safe evaluator, simplifier, and batch functions.
 - `Main.hs` — seven repeatable demonstrations with expected/actual results.
-- `EC8206_Project_Report.docx` — submission-ready report (after replacing the student placeholders).
-- `EC8206_Project_Report.pdf` — PDF copy of the same report.
-- `report.html` — editable source used to generate the report.
-- `build_report.ps1` — regenerates DOCX and PDF from `report.html` using Microsoft Word.
 - `performance/` — optional Haskell-versus-Java performance benchmark; it is
   separate from the assignment's required deliverables.
+
+Coursework reports, generated documents, and submission archives are kept
+locally and excluded from this source repository through `.gitignore`.
 
 ## Run
 
@@ -45,7 +44,6 @@ See `performance/README.md` for methodology and interpretation limits.
 
 ## Before submitting
 
-Replace `[Your Name]` and `[Your Registration Number]` in the report. Review
-the code and report so that you can explain every design choice. Keep or amend
-the assistance disclosure according to the university's academic-integrity
-policy.
+Review the code so that you can explain every design choice. Keep the written
+coursework report outside this repository and follow the university's
+academic-integrity policy.

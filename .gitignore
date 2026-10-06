@@ -22,6 +22,13 @@ cabal.project.local~
 # Optional benchmark build output
 performance/build/
 
+# Coursework reports and generated submission documents
+*.docx
+*.pdf
+*.zip
+report.html
+build_report.ps1
+
 # Editors and operating systems
 .vscode/
 .idea/
