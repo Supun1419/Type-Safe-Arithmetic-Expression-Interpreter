@@ -1,7 +1,5 @@
 # EC8206 Functional Programming Project
 
-This folder contains the complete arithmetic-expression interpreter and its
-written report.
 
 ## Files
 
@@ -42,8 +40,4 @@ cd performance
 
 See `performance/README.md` for methodology and interpretation limits.
 
-## Before submitting
 
-Review the code so that you can explain every design choice. Keep the written
-coursework report outside this repository and follow the university's
-academic-integrity policy.
